@@ -8,21 +8,21 @@ from flask import Flask, request, jsonify
 from urllib.parse import urlencode, quote
 from aws_requests_auth.aws_auth import AWSRequestsAuth
 from datetime import datetime
-import feedparser  # Đã cài
+import os
 
 app = Flask(__name__)
 
-# Config (chỉ cần Affiliate ID từ affiliate.shopee.vn)
-SHOPEE_AFFILIATE_ID = '17314500392'  # Lấy từ https://affiliate.shopee.vn/
-SHOPEE_SHOP_ID = 'nhatquynh2009'  # Dùng shop mẫu (thay bằng shop phổ biến nếu biết)
-AMAZON_ACCESS_KEY = 'YOUR_ACCESS_KEY_ID'
-AMAZON_SECRET_KEY = 'YOUR_SECRET_ACCESS_KEY'
-AMAZON_ASSOCIATE_TAG = 'YOUR_ASSOCIATE_TAG'
+# Config (sử dụng Affiliate ID chính thức, các keys khác từ env hoặc placeholder)
+SHOPEE_AFFILIATE_ID = '17314500392'  # Affiliate ID chính thức của bạn
+SHOPEE_SHOP_ID = os.environ.get('SHOPEE_SHOP_ID', '123456')  # Placeholder, thay bằng Shop ID thật nếu có
+AMAZON_ACCESS_KEY = os.environ.get('AMAZON_ACCESS_KEY', 'YOUR_ACCESS_KEY_ID')
+AMAZON_SECRET_KEY = os.environ.get('AMAZON_SECRET_KEY', 'YOUR_SECRET_ACCESS_KEY')
+AMAZON_ASSOCIATE_TAG = os.environ.get('AMAZON_ASSOCIATE_TAG', 'YOUR_ASSOCIATE_TAG')
 AMAZON_HOST = 'webservices.amazon.com'
 AMAZON_REGION = 'us-east-1'
 AMAZON_SERVICE = 'paapi5'
-FB_PAGE_ID = 'YOUR_FB_PAGE_ID'
-FB_ACCESS_TOKEN = 'YOUR_FB_PAGE_ACCESS_TOKEN'
+FB_PAGE_ID = os.environ.get('FB_PAGE_ID', 'YOUR_FB_PAGE_ID')
+FB_ACCESS_TOKEN = os.environ.get('FB_ACCESS_TOKEN', 'YOUR_FB_PAGE_ACCESS_TOKEN')
 DB_FILE = 'affiliate.db'
 
 # Init Database
@@ -37,31 +37,33 @@ init_db()
 
 @app.route('/fetch_shopee_products', methods=['GET'])
 def fetch_shopee_products():
-    # Thay thế: Sử dụng RSS hoặc hardcode hot products
-    # RSS ví dụ (thay bằng RSS thật từ Shopee search nếu có)
-    rss_url = 'https://shopee.vn/rss/category/1103'  # Điện thoại; dùng search RSS nếu tìm được
-    feed = feedparser.parse(rss_url)
+    # Dữ liệu từ file CSV (category links) với Affiliate ID chính thức
+    products_data = [
+        {'name': 'Health Products', 'price': 500000, 'link': 'https://s.shopee.vn/1VpwtZktot'},
+        {'name': 'Fashion Accessories', 'price': 300000, 'link': 'https://s.shopee.vn/3fuRTYceQK'},
+        {'name': 'Home Appliances', 'price': 2000000, 'link': 'https://s.shopee.vn/3qDrfrc15N'},
+        {'name': 'Men Clothes', 'price': 600000, 'link': 'https://s.shopee.vn/3LHb4wdv6I'},
+        {'name': 'Men Shoes', 'price': 800000, 'link': 'https://s.shopee.vn/3Vb1HFdHlL'},
+        {'name': 'Mobile & Gadgets', 'price': 15000000, 'link': 'https://s.shopee.vn/30ekgKfBmG'},
+        {'name': 'Women Bags', 'price': 700000, 'link': 'https://s.shopee.vn/3AyAsdeYRJ'},
+        {'name': 'Women Clothes', 'price': 500000, 'link': 'https://s.shopee.vn/2g1uHigSSE'},
+        {'name': 'Women Shoes', 'price': 900000, 'link': 'https://s.shopee.vn/2qLKU1fp7H'},
+        {'name': 'Men Bags', 'price': 600000, 'link': 'https://s.shopee.vn/50Pp40XZii'},
+        {'name': 'Watches', 'price': 1000000, 'link': 'https://s.shopee.vn/5AjFGJWwNl'},
+        {'name': 'Grocery', 'price': 200000, 'link': 'https://s.shopee.vn/4fmyfOYqOg'},
+        {'name': 'Beauty', 'price': 400000, 'link': 'https://s.shopee.vn/4q6OrhYD3j'},
+        {'name': 'Moms, Kids & Babies', 'price': 300000, 'link': 'https://s.shopee.vn/4LA8Gma74e'},
+        {'name': 'Consumer Electronics', 'price': 3000000, 'link': 'https://s.shopee.vn/4VTYT5ZTjh'},
+        {'name': 'Cameras', 'price': 5000000, 'link': 'https://s.shopee.vn/40XHsAbNkc'},
+        {'name': 'Home & Living', 'price': 1000000, 'link': 'https://s.shopee.vn/4Aqi4TakPf'}
+    ]
     products = []
     conn = sqlite3.connect(DB_FILE)
-    if not feed.entries:  # Nếu RSS không hoạt động, dùng hardcode mẫu
-        products_data = [
-            {'name': 'iPhone 15', 'price': 20000000, 'item_id': '123456'},
-            {'name': 'Samsung Galaxy S23', 'price': 18000000, 'item_id': '654321'}
-        ]
-        for item in products_data:
-            aff_link = f"https://shopee.vn/product-i.{SHOPEE_SHOP_ID}.{item['item_id']}?af={SHOPEE_AFFILIATE_ID}"
-            products.append({'name': item['name'], 'price': item['price'], 'aff_link': aff_link})
-            conn.execute("INSERT INTO products (platform, name, price, aff_link) VALUES (?, ?, ?, ?)",
-                         ('shopee', item['name'], item['price'], aff_link))
-    else:
-        for entry in feed.entries[:10]:
-            name = entry.title
-            price = 20000000  # Parse từ entry.description nếu có (sử dụng regex)
-            item_id = '123456'  # Extract từ entry.link, ví dụ: re.search(r'i\.(\d+)\.(\d+)', entry.link)
-            aff_link = f"https://shopee.vn/product-i.{SHOPEE_SHOP_ID}.{item_id}?af={SHOPEE_AFFILIATE_ID}"
-            products.append({'name': name, 'price': price, 'aff_link': aff_link})
-            conn.execute("INSERT INTO products (platform, name, price, aff_link) VALUES (?, ?, ?, ?)",
-                         ('shopee', name, price, aff_link))
+    for item in products_data:
+        aff_link = f"{item['link']}?af={SHOPEE_AFFILIATE_ID}"
+        products.append({'name': item['name'], 'price': item['price'], 'aff_link': aff_link})
+        conn.execute("INSERT INTO products (platform, name, price, aff_link) VALUES (?, ?, ?, ?)",
+                     ('shopee', item['name'], item['price'], aff_link))
     conn.commit()
     conn.close()
     return jsonify(products)

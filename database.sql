@@ -20,5 +20,5 @@ CREATE TABLE IF NOT EXISTS orders (
 CREATE INDEX IF NOT EXISTS idx_platform ON products(platform);
 CREATE INDEX IF NOT EXISTS idx_order_platform ON orders(platform);
 
-INSERT INTO products (platform, name, price, aff_link) VALUES ('shopee', 'iPhone 15', 20000000, 'https://shopee.vn/product-i.123.456?af=yourid');
+INSERT INTO products (platform, name, price, aff_link) VALUES ('shopee', 'Health Products', 500000, 'https://s.shopee.vn/1VpwtZktot?af=17314500392');
 INSERT INTO orders (platform, order_id, amount, commission) VALUES ('shopee', 'ORD123', 20000000, 1000000);
