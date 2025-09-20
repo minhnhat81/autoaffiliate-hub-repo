@@ -135,5 +135,9 @@ def get_orders():
     conn.close()
     return jsonify([{'id': o[0], 'platform': o[1], 'order_id': o[2], 'amount': o[3], 'commission': o[4], 'status': o[5], 'tracked_at': o[6]} for o in orders])
 
+@app.route('/')
+def home():
+    return jsonify({'message': 'AutoAffiliate Hub is running! Call /fetch_shopee_products for Shopee links with Affiliate ID 17314500392.'})
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
