@@ -14,7 +14,7 @@ app = Flask(__name__)
 
 # Config (chỉ cần Affiliate ID từ affiliate.shopee.vn)
 SHOPEE_AFFILIATE_ID = '17314500392'  # Lấy từ https://affiliate.shopee.vn/
-SHOPEE_SHOP_ID = '123456'  # Dùng shop mẫu (thay bằng shop phổ biến nếu biết)
+SHOPEE_SHOP_ID = 'nhatquynh2009'  # Dùng shop mẫu (thay bằng shop phổ biến nếu biết)
 AMAZON_ACCESS_KEY = 'YOUR_ACCESS_KEY_ID'
 AMAZON_SECRET_KEY = 'YOUR_SECRET_ACCESS_KEY'
 AMAZON_ASSOCIATE_TAG = 'YOUR_ASSOCIATE_TAG'
