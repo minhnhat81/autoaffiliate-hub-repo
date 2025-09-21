@@ -140,4 +140,5 @@ def home():
     return jsonify({'message': 'AutoAffiliate Hub is running! Call /fetch_shopee_products for Shopee links with Affiliate ID 17314500392.'})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    port = int(os.environ.get('PORT', 5000))  # Sử dụng port từ Heroku, mặc định 5000 nếu không có
+    app.run(host='0.0.0.0', port=port)
