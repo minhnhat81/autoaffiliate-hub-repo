@@ -1,23 +1,14 @@
-import requests
-import json
-import hmac
-import hashlib
-import time
-import sqlite3
 from flask import Flask, request, jsonify
+import os
+import sqlite3
 from urllib.parse import urlencode, quote
 from aws_requests_auth.aws_auth import AWSRequestsAuth
-from datetime import datetime
-import os
+import requests
 
 app = Flask(__name__)
 
-@app.route('/')
-def home():
-    return jsonify({'message': 'AutoAffiliate Hub is running! Call /fetch_shopee_products for Shopee links with Affiliate ID 17314500392.'})
-
 # Config (sử dụng Affiliate ID chính thức, các keys khác từ env hoặc placeholder)
-SHOPEE_AFFILIATE_ID = '17314500392'  # Affiliate ID chính thức của bạn
+SHOPEE_AFFILIATE_ID = os.environ.get('SHOPEE_AFFILIATE_ID', '17314500392')  # Affiliate ID chính thức
 SHOPEE_SHOP_ID = os.environ.get('SHOPEE_SHOP_ID', '123456')  # Placeholder, thay bằng Shop ID thật nếu có
 AMAZON_ACCESS_KEY = os.environ.get('AMAZON_ACCESS_KEY', 'YOUR_ACCESS_KEY_ID')
 AMAZON_SECRET_KEY = os.environ.get('AMAZON_SECRET_KEY', 'YOUR_SECRET_ACCESS_KEY')
@@ -38,6 +29,10 @@ def init_db():
     conn.close()
 
 init_db()
+
+@app.route('/')
+def home():
+    return jsonify({'message': 'AutoAffiliate Hub is running! Call /fetch_shopee_products for Shopee links with Affiliate ID 17314500392.'})
 
 @app.route('/fetch_shopee_products', methods=['GET'])
 def fetch_shopee_products():
@@ -140,5 +135,5 @@ def get_orders():
     return jsonify([{'id': o[0], 'platform': o[1], 'order_id': o[2], 'amount': o[3], 'commission': o[4], 'status': o[5], 'tracked_at': o[6]} for o in orders])
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))  # Sử dụng port từ Heroku, mặc định 5000 nếu không có
+    port = int(os.environ.get('PORT', 5000))  # Sử dụng port từ Render, mặc định 5000 nếu không có
     app.run(host='0.0.0.0', port=port)
