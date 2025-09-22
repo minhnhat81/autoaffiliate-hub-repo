@@ -1,9 +1,6 @@
 from flask import Flask, request, jsonify
 import os
 import sqlite3
-import logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
@@ -55,9 +52,8 @@ def fetch_shopee_products():
                      ('shopee', item['name'], item['price'], aff_link))
     conn.commit()
     conn.close()
-    logger.info("Successfully processed /fetch_shopee_products")
     return jsonify(products)
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 10000))  # Đặt port mặc định là 10000 (theo log Render)
+    port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
