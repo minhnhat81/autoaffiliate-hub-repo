@@ -1,6 +1,10 @@
 from flask import Flask, request, jsonify
 import os
 import sqlite3
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
@@ -24,6 +28,7 @@ def home():
 
 @app.route('/fetch_shopee_products', methods=['GET'])
 def fetch_shopee_products():
+logger.info("Processing /fetch_shopee_products request")
     products_data = [
         {'name': 'Health Products', 'price': 500000, 'link': 'https://s.shopee.vn/1VpwtZktot'},
         {'name': 'Fashion Accessories', 'price': 300000, 'link': 'https://s.shopee.vn/3fuRTYceQK'},
@@ -52,6 +57,7 @@ def fetch_shopee_products():
                      ('shopee', item['name'], item['price'], aff_link))
     conn.commit()
     conn.close()
+    logger.info("Successfully processed /fetch_shopee_products")
     return jsonify(products)
 
 if __name__ == '__main__':
