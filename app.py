@@ -6,19 +6,20 @@ from aws_requests_auth.aws_auth import AWSRequestsAuth
 import requests
 from datetime import datetime
 import logging
-try:
-    import routes  # Thêm try-except để debug
-    logging.getLogger(__name__).info("Successfully imported routes.py")
-except ImportError as e:
-    logging.getLogger(__name__).error(f"Failed to import routes.py: {e}")
-except Exception as e:
-    logging.getLogger(__name__).error(f"Unexpected error during import: {e}")
 
-app = Flask(__name__)
-
-# Config logging
+# Config logging trước khi import
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+try:
+    import routes  # Thêm try-except sau khi logging được cấu hình
+    logger.info("Successfully imported routes.py")
+except ImportError as e:
+    logger.error(f"Failed to import routes.py: {e}")
+except Exception as e:
+    logger.error(f"Unexpected error during import: {e}")
+
+app = Flask(__name__)
 
 # Config (sử dụng Affiliate ID chính thức, các keys khác từ env hoặc placeholder)
 SHOPEE_AFFILIATE_ID = os.environ.get('SHOPEE_AFFILIATE_ID', '17314500392')
