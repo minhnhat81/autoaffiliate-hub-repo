@@ -6,6 +6,7 @@ from aws_requests_auth.aws_auth import AWSRequestsAuth
 import requests
 from datetime import datetime
 import logging
+from app import routes  # Thay đổi import
 
 # Config logging trước khi import
 logging.basicConfig(level=logging.INFO)
