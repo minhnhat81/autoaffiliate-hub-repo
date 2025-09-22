@@ -5,8 +5,13 @@ from urllib.parse import urlencode, quote
 from aws_requests_auth.aws_auth import AWSRequestsAuth
 import requests
 from datetime import datetime
+import logging
 
 app = Flask(__name__)
+
+# Config logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Config (sử dụng Affiliate ID chính thức, các keys khác từ env hoặc placeholder)
 SHOPEE_AFFILIATE_ID = os.environ.get('SHOPEE_AFFILIATE_ID', '17314500392')  # Affiliate ID chính thức của bạn
@@ -21,13 +26,18 @@ FB_PAGE_ID = os.environ.get('FB_PAGE_ID', 'YOUR_FB_PAGE_ID')
 FB_ACCESS_TOKEN = os.environ.get('FB_ACCESS_TOKEN', 'YOUR_FB_PAGE_ACCESS_TOKEN')
 DB_FILE = 'affiliate.db'
 
-# Init Database
+# Init Database with logging
 def init_db():
-    conn = sqlite3.connect(DB_FILE)
-    with open('database.sql', 'r') as f:
-        conn.executescript(f.read())
-    conn.commit()
-    conn.close()
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        with open('database.sql', 'r') as f:
+            conn.executescript(f.read())
+        conn.commit()
+        logger.info("Database initialized successfully")
+    except sqlite3.Error as e:
+        logger.error(f"Database error: {e}")
+    finally:
+        conn.close()
 
 init_db()
 
@@ -37,7 +47,7 @@ def home():
 
 @app.route('/fetch_shopee_products', methods=['GET'])
 def fetch_shopee_products():
-    # Dữ liệu từ file CSV (category links) với Affiliate ID chính thức
+    logger.info("Processing /fetch_shopee_products request")
     products_data = [
         {'name': 'Health Products', 'price': 500000, 'link': 'https://s.shopee.vn/1VpwtZktot'},
         {'name': 'Fashion Accessories', 'price': 300000, 'link': 'https://s.shopee.vn/3fuRTYceQK'},
@@ -66,10 +76,12 @@ def fetch_shopee_products():
                      ('shopee', item['name'], item['price'], aff_link))
     conn.commit()
     conn.close()
+    logger.info("Successfully processed /fetch_shopee_products")
     return jsonify(products)
 
 @app.route('/fetch_amazon_products', methods=['GET'])
 def fetch_amazon_products():
+    logger.info("Processing /fetch_amazon_products request")
     auth = AWSRequestsAuth(
         aws_access_key=AMAZON_ACCESS_KEY,
         aws_secret_access_key=AMAZON_SECRET_KEY,
@@ -99,21 +111,29 @@ def fetch_amazon_products():
                          ('amazon', item['ItemInfo']['Title']['DisplayValue'], float(price), aff_link))
         conn.commit()
         conn.close()
+        logger.info("Successfully processed /fetch_amazon_products")
         return jsonify(products)
+    logger.error(f"Failed to fetch Amazon products: {response.text}")
     return jsonify({'error': response.text}), response.status_code
 
 @app.route('/post_to_facebook', methods=['POST'])
 def post_to_facebook():
+    logger.info("Processing /post_to_facebook request")
     data = request.json
     message = data.get('message', 'Sản phẩm hot!')
     link = data.get('link')
     url = f"https://graph.facebook.com/v20.0/{FB_PAGE_ID}/feed"
     params = {'message': message, 'link': link, 'access_token': FB_ACCESS_TOKEN}
     response = requests.post(url, data=params)
+    if response.status_code == 200:
+        logger.info("Successfully posted to Facebook")
+    else:
+        logger.error(f"Failed to post to Facebook: {response.text}")
     return jsonify(response.json())
 
 @app.route('/track_order_webhook', methods=['POST'])
 def track_order_webhook():
+    logger.info("Processing /track_order_webhook request")
     data = request.json
     platform = data.get('platform', 'unknown')
     order_id = data['order_id']
@@ -124,15 +144,18 @@ def track_order_webhook():
                  (platform, order_id, amount, commission))
     conn.commit()
     conn.close()
+    logger.info("Successfully tracked order webhook")
     return jsonify({'status': 'tracked'})
 
 @app.route('/get_orders', methods=['GET'])
 def get_orders():
+    logger.info("Processing /get_orders request")
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM orders")
     orders = cursor.fetchall()
     conn.close()
+    logger.info(f"Retrieved {len(orders)} orders")
     return jsonify([{'id': o[0], 'platform': o[1], 'order_id': o[2], 'amount': o[3], 'commission': o[4], 'status': o[5], 'tracked_at': o[6]} for o in orders])
 
 if __name__ == '__main__':
