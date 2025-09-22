@@ -11,6 +11,8 @@ try:
     logging.getLogger(__name__).info("Successfully imported routes.py")
 except ImportError as e:
     logging.getLogger(__name__).error(f"Failed to import routes.py: {e}")
+except Exception as e:
+    logging.getLogger(__name__).error(f"Unexpected error during import: {e}")
 
 app = Flask(__name__)
 
@@ -52,6 +54,7 @@ def home():
 
 @app.route('/fetch_shopee_products', methods=['GET'])
 def fetch_shopee_products():
+    logger.info("Calling fetch_shopee_products from routes")
     return routes.fetch_shopee_products()
 
 @app.route('/fetch_amazon_products', methods=['GET'])
