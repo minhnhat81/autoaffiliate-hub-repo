@@ -6,7 +6,11 @@ from aws_requests_auth.aws_auth import AWSRequestsAuth
 import requests
 from datetime import datetime
 import logging
-import routes  # Import file routes.py
+try:
+    import routes  # Thêm try-except để debug
+    logging.getLogger(__name__).info("Successfully imported routes.py")
+except ImportError as e:
+    logging.getLogger(__name__).error(f"Failed to import routes.py: {e}")
 
 app = Flask(__name__)
 
