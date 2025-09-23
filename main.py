@@ -6,14 +6,15 @@ from aws_requests_auth.aws_auth import AWSRequestsAuth
 import requests
 from datetime import datetime
 import logging
-from routes import fetch_shopee_products
+
+app = Flask(__name__)
 
 # Config logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Config (sử dụng Affiliate ID chính thức, các keys khác từ env hoặc placeholder)
-SHOPEE_AFFILIATE_ID = os.environ.get('SHOPEE_AFFILIATE_ID', '17314500392')  # Affiliate ID chính thức của bạn
+SHOPEE_AFFILIATE_ID = os.environ.get('SHOPEE_AFFILIATE_ID', '17314500392')  # Affiliate ID chính thức
 SHOPEE_SHOP_ID = os.environ.get('SHOPEE_SHOP_ID', '123456')  # Placeholder, thay bằng Shop ID thật nếu có
 AMAZON_ACCESS_KEY = os.environ.get('AMAZON_ACCESS_KEY', 'YOUR_ACCESS_KEY_ID')
 AMAZON_SECRET_KEY = os.environ.get('AMAZON_SECRET_KEY', 'YOUR_SECRET_ACCESS_KEY')
@@ -39,8 +40,6 @@ def init_db():
         conn.close()
 
 init_db()
-
-app = Flask(__name__)
 
 @app.route('/')
 def home():
