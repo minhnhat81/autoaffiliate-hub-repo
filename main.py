@@ -6,6 +6,7 @@ from aws_requests_auth.aws_auth import AWSRequestsAuth
 import requests
 from datetime import datetime
 import logging
+from routes import fetch_shopee_products
 
 # Config logging
 logging.basicConfig(level=logging.INFO)
